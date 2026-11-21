@@ -24,3 +24,20 @@ CREATE TABLE ingestion_checkpoints (
 
 CREATE INDEX idx_ingestion_checkpoints_query_page_order
     ON ingestion_checkpoints (query, page_order DESC);
+
+  
+CREATE TABLE processed_clinical_trials (
+    nct_id VARCHAR(20) PRIMARY KEY,
+    identification JSONB NOT NULL,
+    status JSONB NOT NULL,
+    description JSONB NOT NULL,
+    conditions JSONB NOT NULL,
+    interventions JSONB NOT NULL,
+    design JSONB NOT NULL,
+    eligibility JSONB NOT NULL,
+    outcomes JSONB NOT NULL,
+    sponsor JSONB NOT NULL,
+    locations JSONB NOT NULL,
+    medical_terms JSONB NOT NULL,
+    processed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
