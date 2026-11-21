@@ -27,7 +27,8 @@ CREATE INDEX idx_ingestion_checkpoints_query_page_order
 
   
 CREATE TABLE processed_clinical_trials (
-    nct_id VARCHAR(20) PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
+    nct_id VARCHAR(20) NOT NULL UNIQUE,
     identification JSONB NOT NULL,
     status JSONB NOT NULL,
     description JSONB NOT NULL,
