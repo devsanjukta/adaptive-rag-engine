@@ -1,6 +1,4 @@
-import json
-
-from data_pipeline.document_processing.processor import ClinicalTrialProcessor
+from data_pipeline.document_chunking.service import DocumentChunkingService
 from dependencies.clinical_trials import (
     provide_clinical_trials_client,
     provide_clinical_trials_repository,
@@ -9,6 +7,11 @@ from dependencies.clinical_trials import (
     provide_trial_processing_service,
 )
 from dependencies.database import provide_database_repository
+from dependencies.document_chunking import (
+    provide_document_chunking_processor,
+    provide_document_chunking_repository,
+    provide_document_chunking_service,
+)
 from shared.database import provide_db_session
 
 
@@ -39,6 +42,19 @@ def run_trial_processing_pipeline():
     print(f"Processed: {processed_count}")
 
 
+def run_document_chunking() -> DocumentChunkingService:
+    with provide_db_session() as session:
+        db = provide_database_repository(session)
+        repository = provide_document_chunking_repository(db)
+        processor = provide_document_chunking_processor()
+        service = provide_document_chunking_service(repository, processor)
+
+        chunks = service.chunk_trials()
+
+    print(f"Total Chunks: {chunks}")
+
+
 if __name__ == "__main__":
     # run_clinical_trials_pipeline()
-    run_trial_processing_pipeline()
+    # run_trial_processing_pipeline()
+    run_document_chunking()
