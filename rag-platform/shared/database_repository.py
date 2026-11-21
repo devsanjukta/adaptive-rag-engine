@@ -48,3 +48,6 @@ class DatabaseRepository:
         result = self.session.execute(text(query), params or {})
 
         return [model(**dict(row)) for row in result.mappings().all()]
+
+    def execute_many(self, query: str, params: list[dict[str, Any]]) -> None:
+        self.session.execute(text(query), params)
