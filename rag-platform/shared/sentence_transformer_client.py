@@ -43,3 +43,13 @@ class SentenceTransformerClient:
             )
 
         return outputs
+
+    def generate_query_embedding(self, query: str) -> list[float]:
+        vector = self.model.encode(
+            query,
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+            show_progress_bar=False,
+        )
+
+        return vector.tolist()
