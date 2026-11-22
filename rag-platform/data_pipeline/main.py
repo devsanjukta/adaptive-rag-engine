@@ -1,4 +1,3 @@
-from data_pipeline.document_chunking.service import DocumentChunkingService
 from dependencies.clinical_trials import (
     provide_clinical_trials_client,
     provide_clinical_trials_repository,
@@ -12,15 +11,17 @@ from dependencies.document_chunking import (
     provide_document_chunking_repository,
     provide_document_chunking_service,
 )
+from dependencies.embedding_generation import (
+    provide_embedding_repository,
+    provide_embedding_service,
+    provide_sentence_transformer_client,
+)
 from shared.database import provide_db_session
+from shared.database_repository import DatabaseRepository
 
 
-def run_clinical_trials_pipeline():
-    with (
-        provide_clinical_trials_client() as client,
-        provide_db_session() as session,
-    ):
-        db = provide_database_repository(session)
+def run_clinical_trials_pipeline(db: DatabaseRepository) -> None:
+    with provide_clinical_trials_client() as client:
         repository = provide_clinical_trials_repository(db)
         service = provide_clinical_trials_service(client, repository)
 
@@ -31,30 +32,48 @@ def run_clinical_trials_pipeline():
     print(f"Unchanged: {result.unchanged}")
 
 
-def run_trial_processing_pipeline():
-    with provide_db_session() as session:
-        db = provide_database_repository(session)
-        repository = provide_trial_processing_repository(db)
-        service = provide_trial_processing_service(repository)
+def run_trial_processing_pipeline(db: DatabaseRepository) -> None:
+    repository = provide_trial_processing_repository(db)
+    service = provide_trial_processing_service(repository)
 
-        processed_count = service.process_trials()
+    processed_count = service.process_trials()
 
     print(f"Processed: {processed_count}")
 
 
-def run_document_chunking() -> DocumentChunkingService:
-    with provide_db_session() as session:
-        db = provide_database_repository(session)
-        repository = provide_document_chunking_repository(db)
-        processor = provide_document_chunking_processor()
-        service = provide_document_chunking_service(repository, processor)
+def run_document_chunking(db: DatabaseRepository) -> None:
+    repository = provide_document_chunking_repository(db)
+    processor = provide_document_chunking_processor()
+    service = provide_document_chunking_service(repository, processor)
 
-        chunks = service.chunk_trials()
+    chunks = service.chunk_trials()
 
     print(f"Total Chunks: {chunks}")
 
 
+def run_embedding_generation(db: DatabaseRepository) -> None:
+    repository = provide_embedding_repository(db)
+    client = provide_sentence_transformer_client()
+
+    service = provide_embedding_service(
+        repository,
+        client,
+    )
+
+    total_embeddings = service.generate_embeddings()
+
+    print(f"Total Embeddings: {total_embeddings}")
+
+
+def main():
+    with provide_db_session() as session:
+        db = provide_database_repository(session)
+
+        # run_clinical_trials_pipeline(db)
+        # run_trial_processing_pipeline(db)
+        # run_document_chunking(db)
+        run_embedding_generation(db)
+
+
 if __name__ == "__main__":
-    # run_clinical_trials_pipeline()
-    # run_trial_processing_pipeline()
-    run_document_chunking()
+    main()
