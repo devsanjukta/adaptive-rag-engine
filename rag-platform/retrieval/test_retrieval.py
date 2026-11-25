@@ -16,18 +16,11 @@ def test_retrieval(db: DatabaseRepository):
     query = "Enhanced COPD Management"
     request = SearchRequest(
         query=query,
-        top_k=5,
+        top_k=10,
     )
 
-    results = retrieval_service.search(request)
-
-    for result in results:
-        print(f"NCT ID: {result.nct_id}")
-        print(f"Section: {result.section}")
-        print(f"Similarity: {result.similarity_score:.4f}")
-        print(f"Content: {result.content[:200]}")
-        print("-" * 50)
-
+    result = retrieval_service.search(request)
+    print(result)
     print("search completed")
 
 

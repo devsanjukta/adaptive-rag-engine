@@ -15,3 +15,8 @@ class RetrievedChunk(BaseModel):
     section: str
     metadata: dict
     similarity_score: float
+
+
+class RetrievedTrial(BaseModel):
+    nct_id: str
+    chunks: list[RetrievedChunk]
