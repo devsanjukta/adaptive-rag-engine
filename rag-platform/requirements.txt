@@ -7,3 +7,9 @@ requests
 psycopg[binary]
 tiktoken
 sentence-transformers
+pandas
+datasets
+transformers
+torch
+datasets
+accelerate>=1.1.0
