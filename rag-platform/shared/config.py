@@ -3,6 +3,10 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Ollama configuration
+OLLAMA_MODEL_NAME = "qwen2.5:3b"
+OLLAMA_URL = "http://localhost:11434/api/chat"
+
 # Project root directory.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 

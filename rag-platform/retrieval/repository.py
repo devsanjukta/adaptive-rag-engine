@@ -1,5 +1,3 @@
-from sqlalchemy import text
-
 from retrieval.retrieval_model import RetrievedChunk
 from shared.database_repository import DatabaseRepository
 
@@ -38,3 +36,40 @@ class RetrievalRepository:
         }
 
         return self.database_repository.fetch_all(query, RetrievedChunk, params)
+
+    def search_keyword_chunks(
+        self,
+        query: str,
+        top_k: int = 5,
+    ) -> list[RetrievedChunk]:
+        sql = """
+            SELECT
+                dc.id AS chunk_id,
+                dc.trial_id,
+                dc.chunk_index,
+                dc.content,
+                dc.section,
+                dc.metadata,
+                pct.nct_id,
+                ts_rank_cd(
+                    to_tsvector('english', dc.content),
+                    websearch_to_tsquery('english', :query)
+                ) AS similarity_score
+            FROM document_chunks dc
+            JOIN processed_clinical_trials pct ON pct.id = dc.trial_id
+            WHERE to_tsvector('english', dc.content)
+                @@ websearch_to_tsquery('english', :query)
+            ORDER BY similarity_score DESC
+            LIMIT :top_k
+        """
+
+        params = {
+            "query": query,
+            "top_k": top_k,
+        }
+
+        return self.database_repository.fetch_all(
+            sql,
+            RetrievedChunk,
+            params,
+        )

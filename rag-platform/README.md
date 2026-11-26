@@ -94,14 +94,19 @@ Completed:
 - Pydantic-based record validation.
 - Required field, label, and negative type checks.
 - Successfully validated all 2,200 records.
-
-Next:
 - AI-assisted label review.
 - Evaluate the pretrained reranker.
 - Fine-tune using the prepared dataset.
 - Implement hard-negative mining.
 
+
 **Note:** Dataset labels are generated using keyword-based rules and have not been expert-verified. AI-assisted review will help identify potentially incorrect labels. Human review remains the final decision.
+
+Next:
+
+Implement adaptive query routing.
+
+Implement custom hybrid retrieval.
 
 ## 5. Architecture Principles
 
@@ -139,10 +144,38 @@ Next:
    - Implement claim verification.
    - Improve answer reliability and traceability.
 
-## 7. Current Development Focus
+## Retrieval Implementation Roadmap (Adaptive Query Routing)
 
-The current focus is reranker development, starting with AI-assisted dataset label review.
+### Router Decides one of following Search type based on query
 
-A small local language model (`qwen2.5:0.5b`) will be tested using Ollama before implementing the AI reviewer.
+### 1. Semantic Search
+- Vector similarity search using pgvector.
+- Cosine similarity ranking.
 
-The goal is to evaluate its accuracy, usefulness, inference speed, and memory usage on available hardware before committing to the approach.
+### 2. Keyword Search
+- PostgreSQL Full-Text Search (`tsvector`, `tsquery`).
+- GIN indexing.
+- Keyword relevance ranking using `ts_rank_cd()`.
+
+### 3. Hybrid Search
+- Combine semantic and keyword results.
+- Reciprocal Rank Fusion (RRF).
+- Configurable retrieval limits.
+- Duplicate result handling.
+
+### 4. Metadata Filtering
+- Filter by trial phase, status, condition, and intervention.
+- Combine filters with retrieval strategies.
+
+### 5. Retrieval Evaluation
+- Recall@K.
+- Precision@K.
+- MRR@K.
+- nDCG@K.
+- Compare semantic, keyword, and hybrid retrieval.
+
+### 6. Performance Evaluation
+- Query latency.
+- Database query performance.
+- Index effectiveness.
+- Retrieval scalability.

@@ -1,19 +1,25 @@
+from dependencies.common import provide_ollama_client
 from dependencies.database import provide_database_repository
 from dependencies.embedding_generation import provide_sentence_transformer_client
+from dependencies.retrieval import provide_query_classifier, provide_retrieval_service
 from retrieval.repository import RetrievalRepository
 from retrieval.retrieval_model import SearchRequest
-from retrieval.service import RetrievalService
 from shared.database import provide_db_session
 from shared.database_repository import DatabaseRepository
 
 
 def test_retrieval(db: DatabaseRepository):
     retrieval_repository = RetrievalRepository(db)
-    client = provide_sentence_transformer_client()
-    retrieval_service = RetrievalService(retrieval_repository, client)
+    tranformer_client = provide_sentence_transformer_client()
+    ollama_client = provide_ollama_client()
+    query_classifier = provide_query_classifier(ollama_client)
+
+    retrieval_service = provide_retrieval_service(
+        retrieval_repository, tranformer_client, query_classifier
+    )
 
     # query="Clinical trials for lung cancer",
-    query = "Enhanced COPD Management"
+    query = "NCT04691817"
     request = SearchRequest(
         query=query,
         top_k=10,

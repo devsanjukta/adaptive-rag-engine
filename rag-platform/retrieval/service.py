@@ -1,41 +1,49 @@
 from collections import defaultdict
 
 from reranker.reranker import Reranker
-from retrieval.repository import RetrievalRepository
-from retrieval.retrieval_model import RetrievedChunk, RetrievedTrial, SearchRequest
-from shared.sentence_transformer_client import SentenceTransformerClient
+from retrieval.query_classifier import QueryClassifier
+from retrieval.query_type import QueryType
+from retrieval.retrieval_model import RetrievedTrial, SearchRequest
+from retrieval.strategies.base import RetrievalStrategy
 
 
 class RetrievalService:
     def __init__(
         self,
-        retrieval_repository: RetrievalRepository,
-        sentence_transformer_client: SentenceTransformerClient,
+        query_classifier: QueryClassifier,
+        strategies: dict[QueryType, RetrievalStrategy],
     ):
-        self.retrieval_repository = retrieval_repository
-        self.sentence_transformer_client = sentence_transformer_client
+        self.query_classifier = query_classifier
+        self.strategies = strategies
         self.reranker = Reranker()
 
-    def search(self, request: SearchRequest) -> list[RetrievedChunk]:
-        query_embedding = self.sentence_transformer_client.generate_query_embedding(
-            request.query
-        )
-        chunks = self.retrieval_repository.search_similar_chunks(
-            query_embedding,
+    def search(self, request: SearchRequest) -> list[RetrievedTrial]:
+
+        # 1. Classify query
+        query_type = self.query_classifier.classify(request.query)
+
+        # 2. Select retrieval strategy
+        strategy = self.strategies[query_type]
+
+        # 3. Retrieve chunks
+        chunks = strategy.search(
+            request.query,
             request.top_k,
         )
 
-        ranked_chunks = self.reranker.rerank(request.query, chunks)
+        # 4. Rerank chunks
+        ranked_chunks = self.reranker.rerank(
+            request.query,
+            chunks,
+        )
 
+        # 5. Group chunks by trial
         grouped_trials = defaultdict(list)
+
         for chunk in ranked_chunks:
             grouped_trials[chunk.nct_id].append(chunk)
 
-        results = [
-            RetrievedTrial(nct_id=nct_id, chunks=chunks)
-            for nct_id, chunks in grouped_trials.items()
+        return [
+            RetrievedTrial(nct_id=nct_id, chunks=trial_chunks)
+            for nct_id, trial_chunks in grouped_trials.items()
         ]
-
-        print("after rank and grouping")
-        print(results)
-        return results

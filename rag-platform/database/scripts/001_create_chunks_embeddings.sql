@@ -12,3 +12,18 @@ CREATE TABLE document_chunks (
 
 CREATE INDEX idx_document_chunks_trial_id
 ON document_chunks(trial_id);
+
+
+CREATE EXTENSION IF NOT EXISTS vector;
+
+CREATE TABLE document_embeddings (
+    id SERIAL PRIMARY KEY,
+    chunk_id INTEGER NOT NULL UNIQUE REFERENCES document_chunks(id) ON DELETE CASCADE,
+    embedding VECTOR(384) NOT NULL,
+    model VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_document_chunks_content_fts
+ON document_chunks
+USING GIN (to_tsvector('english', content));
