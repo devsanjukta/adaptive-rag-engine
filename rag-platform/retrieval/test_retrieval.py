@@ -1,7 +1,11 @@
 from dependencies.common import provide_ollama_client
 from dependencies.database import provide_database_repository
 from dependencies.embedding_generation import provide_sentence_transformer_client
-from dependencies.retrieval import provide_query_classifier, provide_retrieval_service
+from dependencies.retrieval import (
+    provide_query_classifier,
+    provide_reranker,
+    provide_retrieval_service,
+)
 from retrieval.repository import RetrievalRepository
 from retrieval.retrieval_model import SearchRequest
 from shared.database import provide_db_session
@@ -13,9 +17,9 @@ def test_retrieval(db: DatabaseRepository):
     tranformer_client = provide_sentence_transformer_client()
     ollama_client = provide_ollama_client()
     query_classifier = provide_query_classifier(ollama_client)
-
+    reranker = provide_reranker()
     retrieval_service = provide_retrieval_service(
-        retrieval_repository, tranformer_client, query_classifier
+        retrieval_repository, tranformer_client, query_classifier, reranker
     )
 
     # query="Clinical trials for lung cancer",

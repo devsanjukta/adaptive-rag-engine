@@ -1,3 +1,4 @@
+from reranker.reranker import Reranker
 from retrieval.query_classifier import QueryClassifier
 from retrieval.query_type import QueryType
 from retrieval.repository import RetrievalRepository
@@ -8,6 +9,10 @@ from retrieval.strategies.semantic import SemanticStrategy
 from shared.database_repository import DatabaseRepository
 from shared.ollama_client import OllamaClient
 from shared.sentence_transformer_client import SentenceTransformerClient
+
+
+def provide_reranker() -> Reranker:
+    return Reranker()
 
 
 def provide_retrieval_repository(

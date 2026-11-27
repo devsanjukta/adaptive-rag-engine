@@ -12,10 +12,11 @@ class RetrievalService:
         self,
         query_classifier: QueryClassifier,
         strategies: dict[QueryType, RetrievalStrategy],
+        reranker: Reranker,
     ):
         self.query_classifier = query_classifier
         self.strategies = strategies
-        self.reranker = Reranker()
+        self.reranker = reranker
 
     def search(self, request: SearchRequest) -> list[RetrievedTrial]:
 
